@@ -11,9 +11,10 @@ module.exports = {
 		'eslint:recommended',
 		'plugin:import/errors',
 		'plugin:react/recommended',
+		'plugin:react/jsx-runtime',
 		'plugin:jsx-a11y/recommended',
 		'plugin:react-hooks/recommended',
-		'plugin:@typescript-eslint/recommended',
+		'plugin:@typescript-eslint/strict-type-checked',
 		'plugin:@typescript-eslint/recommended-requiring-type-checking',
 		'prettier',
 	],
@@ -29,7 +30,8 @@ module.exports = {
 	parserOptions: {
 		ecmaVersion: 2022,
 		sourceType: 'module',
-		project: 'tsconfig.json',
+		project: ['./tsconfig.json', './tsconfig.node.json'],
+		tsconfigRootDir: __dirname,
 		ecmaFeatures: {
 			jsx: true,
 		},
