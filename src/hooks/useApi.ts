@@ -125,17 +125,21 @@ function useStates(accessToken: string) {
 function useCities(accessToken: string, state: string) {
 	// * refactor opportunity: leverage useLocalStorage to load city data from cache
 	const [cities, setCities] = useState<string[]>([]);
-	const [status, setStatus] = useState<LoadingStatus>('loading');
+	const [status, setStatus] = useState<LoadingStatus>('pending');
+
+	useEffect(() => {
+		if (state) setStatus('loading');
+	}, [state]);
 
 	useEffect(() => {
 		getCities()
 			.then((cities) => {
-				setStatus('loaded');
 				if (!cities) return;
 				// some states return duplicate city names (i.e. florida)
 				// use a set to remove duplicates
 				const cityNames = new Set(cities.map((city) => city[CITY_NAME_KEY]));
 				setCities(() => [...cityNames]);
+				setStatus('loaded');
 			})
 			.catch((err) => {
 				setStatus('error');
