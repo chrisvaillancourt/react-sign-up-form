@@ -13,7 +13,7 @@ export function Select({ label, status, id, options, ...rest }: Props) {
 			<label htmlFor={id}>{label}: </label>
 			<select {...rest}>
 				<option value="">
-					{status === 'loading' ? 'loading...' : 'Select a State'}
+					{status === 'loading' ? 'loading...' : `Select a ${label}`}
 				</option>
 				{options.map((option) => (
 					<option value={option} key={option}>
