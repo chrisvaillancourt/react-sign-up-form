@@ -1,35 +1,14 @@
-import type { HTMLInputTypeAttribute, ChangeEvent } from 'react';
+import type { InputHTMLAttributes } from 'react';
 
-interface Props {
-	value: string;
-	id: string;
-	type: HTMLInputTypeAttribute;
+interface Props extends InputHTMLAttributes<HTMLInputElement> {
 	label: string;
-	name: string;
-	onChange: (e: ChangeEvent<HTMLInputElement>) => void;
-	onBlur: (e: ChangeEvent<HTMLInputElement>) => void;
 }
 
-export function Input({
-	value,
-	id,
-	type,
-	label,
-	name,
-	onChange,
-	onBlur,
-}: Props) {
+export function Input({ id, label, ...rest }: Props) {
 	return (
 		<>
 			<label htmlFor={id}>{`${label}: `}</label>
-			<input
-				type={type}
-				name={name}
-				id={id}
-				value={value}
-				onChange={onChange}
-				onBlur={onBlur}
-			/>
+			<input id={id} {...rest} />
 		</>
 	);
 }
