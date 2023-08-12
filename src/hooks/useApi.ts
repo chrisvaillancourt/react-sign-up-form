@@ -11,7 +11,9 @@ const STATE_NAME_KEY = 'state_name';
 interface StateResponse {
 	[STATE_NAME_KEY]: string;
 }
-
+/**
+ * Key used in city response to store the city name.
+ */
 const CITY_NAME_KEY = 'city_name';
 
 interface CityResponse {
@@ -20,6 +22,10 @@ interface CityResponse {
 
 export { useAccessToken, useStates, useCities };
 
+/**
+ * Get an access token to authenticate API requests.
+ * @throws {TypeError} if the response doesn't contain an `auth_token` key that's a string.
+ */
 function useAccessToken({
 	apiEmail,
 	apiToken,
@@ -66,7 +72,12 @@ function useAccessToken({
 		accessToken,
 	};
 }
-
+/**
+ * Gets a list of US states.
+ * Also returns the current loading status.
+ * @throws {TypeError} if the response doesn't contain an array of objects with a state name
+ * stored under a `STATE_NAME_KEY` label
+ */
 function useStates(accessToken: string) {
 	// * refactor opportunity: leverage useLocalStorage to load state data from cache
 	const [states, setStates] = useState<string[]>([]);
@@ -105,31 +116,12 @@ function useStates(accessToken: string) {
 
 	return { states, status };
 }
-function isStatesResponse(
-	maybeStatesResponse?: unknown,
-): maybeStatesResponse is StateResponse[] {
-	return (
-		!!maybeStatesResponse &&
-		Array.isArray(maybeStatesResponse) &&
-		maybeStatesResponse.every(
-			(state) =>
-				state !== null && typeof state === 'object' && STATE_NAME_KEY in state,
-		)
-	);
-}
-function isCitiesResponse(
-	maybeCitiesResponse?: unknown,
-): maybeCitiesResponse is CityResponse[] {
-	return (
-		!!maybeCitiesResponse &&
-		Array.isArray(maybeCitiesResponse) &&
-		maybeCitiesResponse.every(
-			(city) =>
-				city !== null && typeof city === 'object' && CITY_NAME_KEY in city,
-		)
-	);
-}
-
+/**
+ * Gets a list of cities for the given state.
+ * Also returns the current loading status.
+ * @throws {TypeError} if the response doesn't contain an array of objects with a city name
+ * stored under a `CITY_NAME_KEY` label
+ */
 function useCities(accessToken: string, state: string) {
 	// * refactor opportunity: leverage useLocalStorage to load city data from cache
 	const [cities, setCities] = useState<string[]>([]);
@@ -167,6 +159,9 @@ function useCities(accessToken: string, state: string) {
 	return { cities, status };
 }
 
+/**
+ * Get a new header object that's common across API requests.
+ */
 function baseHeaders(accessToken: string) {
 	return Object.freeze({
 		Accept: 'application/json',
@@ -174,6 +169,9 @@ function baseHeaders(accessToken: string) {
 	});
 }
 
+/**
+ * Get a bearer token used to authenticate API requests.
+ */
 function bearerToken(accessToken: string) {
 	return `Bearer ${accessToken}`;
 }
@@ -187,4 +185,34 @@ function validateResponseIsOk(response: Response, resourceName: string) {
 		throw new Error(
 			`Error requesting ${resourceName}. The response was not ok.`,
 		);
+}
+/**
+ * Type guard to validate the state response is the expected type.
+ */
+function isStatesResponse(
+	maybeStatesResponse?: unknown,
+): maybeStatesResponse is StateResponse[] {
+	return (
+		!!maybeStatesResponse &&
+		Array.isArray(maybeStatesResponse) &&
+		maybeStatesResponse.every(
+			(state) =>
+				state !== null && typeof state === 'object' && STATE_NAME_KEY in state,
+		)
+	);
+}
+/**
+ * Type guard to validate the Cities response is the expected type.
+ */
+function isCitiesResponse(
+	maybeCitiesResponse?: unknown,
+): maybeCitiesResponse is CityResponse[] {
+	return (
+		!!maybeCitiesResponse &&
+		Array.isArray(maybeCitiesResponse) &&
+		maybeCitiesResponse.every(
+			(city) =>
+				city !== null && typeof city === 'object' && CITY_NAME_KEY in city,
+		)
+	);
 }
