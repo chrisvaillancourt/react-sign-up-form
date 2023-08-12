@@ -3,6 +3,7 @@
 }
 
 :root {
+	--stacks: 3;
 	font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
 	line-height: 1.5;
 	font-weight: 400;
@@ -16,33 +17,97 @@
 	-webkit-text-size-adjust: 100%;
 }
 
-a {
-	font-weight: 500;
-	color: #646cff;
-	text-decoration: inherit;
-}
-a:hover {
-	color: #535bf2;
-}
-
 body {
+	display: grid;
+	height: 100vh;
 	margin: 0;
-	display: flex;
-	place-items: center;
-	min-width: 320px;
-	min-height: 100vh;
+	place-items: center center;
 }
 
+/* start */
+.first {
+	--index: 0;
+}
+.second {
+	--index: 1;
+}
+.third {
+	--index: 2;
+}
+@keyframes stack {
+	0% {
+		opacity: 0;
+		transform: translateX(-50%);
+		text-shadow:
+			-2px 3px 0 red,
+			2px -3px 0 blue;
+	}
+	60% {
+		opacity: 0.5;
+		transform: translateX(50%);
+	}
+	80% {
+		transform: none;
+		opacity: 1;
+		text-shadow:
+			2px -3px 0 red,
+			-2px 3px 0 blue;
+	}
+	100% {
+		text-shadow: none;
+	}
+}
+@keyframes glitch {
+	0% {
+		text-shadow:
+			-2px 3px 0 red,
+			2px -3px 0 blue;
+		transform: translate(var(--glitch-translate));
+	}
+	2% {
+		text-shadow:
+			2px -3px 0 red,
+			-2px 3px 0 blue;
+	}
+	4%,
+	100% {
+		text-shadow: none;
+		transform: none;
+	}
+}
 h1 {
-	font-size: 3.2em;
-	line-height: 1.1;
+	--stacks: 3;
+	display: grid;
+	grid-template-columns: 1fr;
+	margin-bottom: 28px;
+	font-size: 3.2rem;
+}
+h1 span {
+	grid-row-start: 1;
+	grid-column-start: 1;
+	--stack-height: calc(100% / var(--stacks) - 1px);
+	--inverse-index: calc(calc(var(--stacks) - 1) - var(--index));
+	--clip-top: calc(var(--stack-height) * var(--index));
+	--clip-bottom: calc(var(--stack-height) * var(--inverse-index));
+	clip-path: inset(var(--clip-top) 0 var(--clip-bottom) 0);
+	animation:
+		stack 340ms cubic-bezier(0.46, 0.29, 0, 1.24) 1 backwards
+			calc(var(--index) * 120ms),
+		glitch 1.5s ease infinite 1.5s alternate-reverse;
+}
+h1 span:nth-child(odd) {
+	--glitch-translate: 8px;
+}
+h1 span:nth-child(even) {
+	--glitch-translate: -8px;
 }
 
 button {
 	border-radius: 8px;
 	border: 1px solid transparent;
-	padding: 0.6em 1.2em;
-	font-size: 1em;
+	padding: 0.6rem 1.2rem;
+	margin-top: 16px;
+	font-size: 1rem;
 	font-weight: 500;
 	font-family: inherit;
 	background-color: #1a1a1a;
@@ -55,6 +120,11 @@ button:hover {
 button:focus,
 button:focus-visible {
 	outline: 4px auto -webkit-focus-ring-color;
+}
+fieldset {
+	display: flex;
+	flex-flow: row wrap;
+	gap: 16px;
 }
 
 @media (prefers-color-scheme: light) {

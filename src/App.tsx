@@ -9,8 +9,6 @@ import {
 	useCities,
 } from '@/hooks';
 
-import './App.css';
-
 export function App() {
 	const [firstName, setFirstName] = useState('');
 	const [lastName, setLastName] = useState('');
@@ -22,8 +20,12 @@ export function App() {
 	const { apiEmail, apiToken } = useEnvironmentVariables();
 	const { accessToken } = useAccessToken({ apiEmail, apiToken });
 	const { states, status: statesStatus } = useStates(accessToken);
-	const { cities } = useCities(accessToken, state);
+	const { cities, status: citiesStatus } = useCities(accessToken, state);
 
+	/**
+	 * Generic helper to destructure the current value of an input/select
+	 * and pass it to a SetStateAction.
+	 */
 	function handleInputChange(
 		e: ChangeEvent<HTMLInputElement | HTMLSelectElement>,
 		cb: Dispatch<SetStateAction<string>>,
@@ -32,9 +34,10 @@ export function App() {
 			target: { value },
 		} = e;
 
-		cb(() => value);
+		cb(value);
 	}
 	function handleSubmit() {
+		// TODO put in request body
 		const formData = {
 			firstName,
 			lastName,
@@ -49,6 +52,11 @@ export function App() {
 
 	return (
 		<main>
+			<h1>
+				<span className="first">React Sign-up Form</span>
+				<span className="second">React Sign-up Form</span>
+				<span className="third">React Sign-up Form</span>
+			</h1>
 			<form
 				onSubmit={(e) => {
 					e.preventDefault();
@@ -70,10 +78,6 @@ export function App() {
 						}}
 						onBlur={(e) => {
 							handleInputChange(e, setFirstName);
-							const isValid = e.target.checkValidity();
-							if (!isValid) {
-								e.target.setCustomValidity('First name is required.');
-							}
 						}}
 					/>
 					<Input
@@ -107,6 +111,12 @@ export function App() {
 						}}
 						onBlur={(e) => {
 							handleInputChange(e, setEmail);
+							const emailRegex = new RegExp(
+								/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
+								'gm',
+							);
+							const isValid = emailRegex.test(e.target.value);
+							e.target.setCustomValidity(isValid ? '' : 'Enter valid email');
 						}}
 					/>
 					<Input
@@ -135,6 +145,9 @@ export function App() {
 						options={states}
 						status={statesStatus}
 						disabled={statesStatus === 'loading'}
+						placeholder={
+							statesStatus === 'loading' ? 'loading...' : `Select a State`
+						}
 						onChange={(e) => {
 							handleInputChange(e, setState);
 							setCity('');
@@ -145,6 +158,10 @@ export function App() {
 						}}
 						value={state}
 					/>
+					{/*
+					 * we could use CSS `content-visibility: auto` to improve rendering perf
+					 * https://developer.mozilla.org/en-US/docs/Web/CSS/content-visibility
+					 */}
 					<Select
 						label="City"
 						id="city"
@@ -152,7 +169,15 @@ export function App() {
 						options={cities}
 						value={city}
 						required
-						disabled={!state}
+						disabled={!state || citiesStatus === 'loading'}
+						status={citiesStatus}
+						placeholder={
+							citiesStatus === 'pending'
+								? 'Select a State'
+								: citiesStatus === 'loading'
+								? 'loading...'
+								: 'Select a City'
+						}
 						onChange={(e) => {
 							handleInputChange(e, setCity);
 						}}
