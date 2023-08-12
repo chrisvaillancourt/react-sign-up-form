@@ -1,3 +1,3 @@
-type LoadingStatus = 'loading' | 'loaded' | 'error';
+type LoadingStatus = 'pending' | 'loading' | 'loaded' | 'error';
 
 export type { LoadingStatus };
