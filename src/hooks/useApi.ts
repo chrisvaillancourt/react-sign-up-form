@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import type { LoadingStatus } from '@/types';
-import { useLocalStorage } from './index';
 
 const BASE_URL = `https://www.universal-tutorial.com/api`;
 
@@ -31,10 +30,15 @@ function useAccessToken({
 	const [accessToken, setAccessToken] = useState('');
 
 	useEffect(() => {
-		getAccessToken().catch((err) => {
-			console.error('Error loading access token: ');
-			console.error(err);
-		});
+		getAccessToken()
+			.then((accessToken) => {
+				if (!accessToken) return;
+				setAccessToken(() => accessToken);
+			})
+			.catch((err) => {
+				console.error(err);
+			});
+
 		async function getAccessToken() {
 			if (!apiEmail || !apiToken) return;
 
@@ -47,17 +51,14 @@ function useAccessToken({
 			const res = await fetch(url, {
 				headers,
 			});
-			if (!res.ok)
-				throw new Error(
-					'Error requesting an access token. The response was not ok.',
-				);
+			validateResponseIsOk(res, 'access token');
 			const json = await res.json();
 			if (!('auth_token' in json))
 				throw new TypeError('auth_token key is missing.');
 			const { auth_token } = json;
 			if (typeof auth_token !== 'string')
 				throw new TypeError('auth_token is not of type String.');
-			setAccessToken(() => auth_token);
+			return auth_token;
 		}
 	}, [apiEmail, apiToken]);
 
@@ -67,18 +68,11 @@ function useAccessToken({
 }
 
 function useStates(accessToken: string) {
+	// * refactor opportunity: leverage useLocalStorage to load state data from cache
 	const [states, setStates] = useState<string[]>([]);
 	const [status, setStatus] = useState<LoadingStatus>('loading');
-	// const [states, setStates] = useLocalStorage<string[]>('states', []);
 
 	useEffect(() => {
-		// don't need to fetch if already in cache
-		// if (states?.length > 0) {
-		// 	console.log('states in cache');
-		// 	if (status !== 'loaded') setStatus('loaded');
-		// 	return;
-		// }
-
 		getStates()
 			.then((statesResponse) => {
 				if (!statesResponse) return;
@@ -99,8 +93,7 @@ function useStates(accessToken: string) {
 			const headers = baseHeaders(accessToken);
 			const url = `${BASE_URL}/states/United%20States`;
 			const res = await fetch(url, { headers });
-			if (!res.ok)
-				throw new Error('Error requesting states. The response was not ok.');
+			validateResponseIsOk(res, 'states');
 			const statesJson = await res.json();
 			if (!isStatesResponse(statesJson))
 				throw new TypeError(
@@ -138,26 +131,30 @@ function isCitiesResponse(
 }
 
 function useCities(accessToken: string, state: string) {
+	// * refactor opportunity: leverage useLocalStorage to load city data from cache
 	const [cities, setCities] = useState<string[]>([]);
+	const [status, setStatus] = useState<LoadingStatus>('loading');
 
 	useEffect(() => {
 		getCities()
 			.then((cities) => {
+				setStatus('loaded');
 				if (!cities) return;
-				const cityNames = cities?.map((city) => city[CITY_NAME_KEY]);
-				setCities(() => cityNames);
+				// some states return duplicate city names (i.e. florida)
+				// use a set to remove duplicates
+				const cityNames = new Set(cities.map((city) => city[CITY_NAME_KEY]));
+				setCities(() => [...cityNames]);
 			})
 			.catch((err) => {
+				setStatus('error');
 				console.error(err);
 			});
 		async function getCities() {
 			if (!accessToken || !state) return;
-
 			const url = `${BASE_URL}/cities/${state}`;
 			const headers = baseHeaders(accessToken);
 			const response = await fetch(url, { headers });
-			if (!response.ok)
-				throw new Error('Error requesting cities. The response was not ok.');
+			validateResponseIsOk(response, 'cities');
 			const citiesJson = await response.json();
 			if (!isCitiesResponse(citiesJson))
 				throw new TypeError(
@@ -167,7 +164,7 @@ function useCities(accessToken: string, state: string) {
 		}
 	}, [accessToken, state]);
 
-	return { cities };
+	return { cities, status };
 }
 
 function baseHeaders(accessToken: string) {
@@ -179,4 +176,15 @@ function baseHeaders(accessToken: string) {
 
 function bearerToken(accessToken: string) {
 	return `Bearer ${accessToken}`;
+}
+
+/**
+ * Validate the response was successful (returned status code in 200-299 range).
+ * @throws Error if response is not ok.
+ */
+function validateResponseIsOk(response: Response, resourceName: string) {
+	if (!response.ok)
+		throw new Error(
+			`Error requesting ${resourceName}. The response was not ok.`,
+		);
 }
