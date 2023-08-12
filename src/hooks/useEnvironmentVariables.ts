@@ -10,21 +10,11 @@ export function useEnvironmentVariables() {
 	const [apiEmail, setApiEmail] = useState('');
 
 	useEffect(() => {
-		const _apiToken = import.meta.env.VITE_API_TOKEN;
-
-		if (!_apiToken) throw new Error(missingEnvVarMessage('VITE_API_TOKEN'));
-		if (typeof _apiToken !== 'string')
-			throw new TypeError(wrongEnvVarType('VITE_API_TOKEN', 'String'));
-
+		const _apiToken = validateEnvVariable(import.meta.env.VITE_API_TOKEN);
 		setApiToken(() => _apiToken);
 	}, []);
 	useEffect(() => {
-		const _email = import.meta.env.VITE_API_EMAIL;
-
-		if (!_email) throw new Error(missingEnvVarMessage('VITE_EMAIL'));
-		if (typeof _email !== 'string')
-			throw new TypeError(wrongEnvVarType('VITE_EMAIL', 'String'));
-
+		const _email = validateEnvVariable(import.meta.env.VITE_API_EMAIL);
 		setApiEmail(() => _email);
 	}, []);
 	return { apiToken, apiEmail };
@@ -34,7 +24,7 @@ export function useEnvironmentVariables() {
  * Can be passed as the message to a new Error instance.
  * Example: throw new Error(missingEnvVarMessage(SOME_ENV_VAR))
  */
-function missingEnvVarMessage(envVar: string) {
+function missingEnvVarMessage(envVar: unknown) {
 	return `
 	Missing environment variable: ${envVar}. 
 	Please be sure a .env file exists in the project root.
@@ -47,10 +37,17 @@ function missingEnvVarMessage(envVar: string) {
  * Can be passed as the message to a new TypeError instance.
  * Example: throw new TypeError(wrongEnvVarType('SOME_ENV_VAR', 'String'))
  */
-function wrongEnvVarType(envVar: string, expectedType: string) {
+function wrongEnvVarType(envVar: unknown, expectedType: string) {
 	return `The environment variable ${envVar} must be of type ${expectedType}`;
 }
-
-function envVarExists(key?: unknown): key is string {
-	return !!key && typeof key === 'string';
+/**
+ * Validates the provided env variable exists and is a string.
+ * @throws Error if envVar is falsy.
+ * @throws TypeError if envVar is not of type string.
+ */
+function validateEnvVariable(envVar: unknown) {
+	if (!envVar) throw new Error(missingEnvVarMessage(envVar));
+	if (typeof envVar !== 'string')
+		throw new TypeError(wrongEnvVarType(envVar, 'String'));
+	return envVar;
 }
