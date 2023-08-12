@@ -5,16 +5,22 @@ interface Props extends SelectHTMLAttributes<HTMLSelectElement> {
 	label: string;
 	options: string[];
 	status?: LoadingStatus;
+	placeholder?: string;
 }
 
-export function Select({ label, status, id, options, ...rest }: Props) {
+export function Select({
+	label,
+	status,
+	id,
+	options,
+	placeholder,
+	...rest
+}: Props) {
 	return (
 		<>
 			<label htmlFor={id}>{label}: </label>
 			<select {...rest}>
-				<option value="">
-					{status === 'loading' ? 'loading...' : `Select a ${label}`}
-				</option>
+				<option value="">{placeholder}</option>
 				{options.map((option) => (
 					<option value={option} key={option}>
 						{option}
