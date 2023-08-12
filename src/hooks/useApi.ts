@@ -39,7 +39,7 @@ function useAccessToken({
 		getAccessToken()
 			.then((accessToken) => {
 				if (!accessToken) return;
-				setAccessToken(() => accessToken);
+				setAccessToken(accessToken);
 			})
 			.catch((err) => {
 				console.error(err);
@@ -91,7 +91,7 @@ function useStates(accessToken: string) {
 					(stateMetadata) => stateMetadata[STATE_NAME_KEY],
 				);
 
-				setStates(() => stateNames);
+				setStates(stateNames);
 				setStatus('loaded');
 			})
 			.catch((err) => {
@@ -138,7 +138,7 @@ function useCities(accessToken: string, state: string) {
 				// some states return duplicate city names (i.e. florida)
 				// use a set to remove duplicates
 				const cityNames = new Set(cities.map((city) => city[CITY_NAME_KEY]));
-				setCities(() => [...cityNames]);
+				setCities([...cityNames]);
 				setStatus('loaded');
 			})
 			.catch((err) => {

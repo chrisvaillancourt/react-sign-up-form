@@ -11,11 +11,11 @@ export function useEnvironmentVariables() {
 
 	useEffect(() => {
 		const _apiToken = validateEnvVariable(import.meta.env.VITE_API_TOKEN);
-		setApiToken(() => _apiToken);
+		setApiToken(_apiToken);
 	}, []);
 	useEffect(() => {
 		const _email = validateEnvVariable(import.meta.env.VITE_API_EMAIL);
-		setApiEmail(() => _email);
+		setApiEmail(_email);
 	}, []);
 	return { apiToken, apiEmail };
 }
